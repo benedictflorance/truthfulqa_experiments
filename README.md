@@ -7,7 +7,7 @@
 ## API Settings
 - For a list of available models, refer to `openai_models.json`
 - A temperature of 0 is used and max tokens of 40 is set. All other parameters are default values.
-- For model retried answer for chat models, the max token is increased to 50 as the model deterministically replies "I apologize for the confusion".
+- For model retried answer for chat models, the max token is increased to 50 as the model deterministically replies "I apologize for the confusion" along with the new answer.
 
 ## Non-chat models:
 - Use `completions_nonchat.py`

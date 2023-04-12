@@ -2,12 +2,12 @@
 
 ## Build instructions:
 - Before running the python files, make sure you change the line `openai.api_key = "add-your-api-key-here"` to your OpenAI key.
-- To run either of the python files, use `python file.py csv_arg` where arg is the csv file of the TruthfulQA dataset
+- To run either of the python files, use `python file.py input_csv_arg output_csv_arg` where arg is the csv file of the TruthfulQA dataset
 
 ## API Settings
 - For a list of available models, refer to `openai_models.json`
-- A temperature of 0 is used and max tokens of 40 is set. All other parameters are default values.
-- For model retried answer for chat models, the max token is increased to 50 as the model deterministically replies "I apologize for the confusion".
+- A temperature of 0 is used and max tokens of 50 is set. All other parameters are default values.
+- For model retried answer for chat models, the max token is increased to 60 as the model deterministically replies "I apologize for the confusion".
 
 ## Non-chat models:
 - Use `completions_nonchat.py`

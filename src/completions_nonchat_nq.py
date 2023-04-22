@@ -7,7 +7,6 @@ model_name = "davinci"
 fieldnames = ['question', 'document_url', 'answer1', 'answer2', 'answer3', 'answer4', 'answer5', 'model', 'model_answer']
 openai.api_key = "add-your-api-key-here"
 csv_file_path = sys.argv[1]
-count = 0
 with open(csv_file_path) as csv_file:
     with open(sys.argv[2], 'w', encoding='utf-8', newline='') as output_csv_file:
         writer = csv.DictWriter(output_csv_file, fieldnames=fieldnames)
@@ -15,9 +14,6 @@ with open(csv_file_path) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         next(csv_reader)
         for row in tqdm(csv_reader):
-            count += 1
-            if count < 7048:
-                continue
             question = row[0]
             while True:
                 try:

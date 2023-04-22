@@ -11,14 +11,12 @@ def remove_html_tags(sentence):
     return sentence[:25000]
 
 def preprocess_nq_data(nq_data_path, output_path):
-    count = 0
     fieldnames = ['question', 'answer1', 'answer2', 'answer3', 'answer4', 'answer5', 'url']
     with open(nq_data_path, 'r') as f:
         with open(output_path, 'w', encoding='utf-8', newline='') as output_csv_file:
             writer = csv.DictWriter(output_csv_file, fieldnames=fieldnames)
             writer.writeheader()
             for line in f:
-                count +=1
                 example = json.loads(line)
                 question = example['question_text']
                 answers = []

@@ -6,6 +6,9 @@ from sklearn.inspection import permutation_importance
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn import preprocessing
+from sklearn.feature_selection import SequentialFeatureSelector
+from sklearn.metrics import accuracy_score
 
 output_paths = ["../outputs/ada_output_labeled_features.csv", "../outputs/babbage_output_labeled_features.csv", "../outputs/curie_output_labeled_features.csv", "../outputs/davinci_output_labeled_features.csv"]
 
@@ -64,43 +67,43 @@ print("Accuracy-train-davinci-test-davinci:",metrics.accuracy_score(y_test_davin
 print("\n")
 
 y_cross = clf_davinci.predict(X_curie)
-print("Accuracy-train-davinci-test-curie:",metrics.accuracy_score(y_curie, y_cross))
+print("Accuracy-train-davinci-test-curie:",metrics.accuracy_score(y_curie, y_cross),np.count_nonzero(y_cross == 1), y_cross.size)
 
 y_cross = clf_davinci.predict(X_babbage)
-print("Accuracy-train-davinci-test-babbage:",metrics.accuracy_score(y_babbage, y_cross))
+print("Accuracy-train-davinci-test-babbage:",metrics.accuracy_score(y_babbage, y_cross),np.count_nonzero(y_cross == 1), y_cross.size)
 
 y_cross = clf_davinci.predict(X_ada)
-print("Accuracy-train-davinci-test-ada:",metrics.accuracy_score(y_ada, y_cross))
+print("Accuracy-train-davinci-test-ada:",metrics.accuracy_score(y_ada, y_cross),np.count_nonzero(y_cross == 1), y_cross.size)
 
 
 y_cross = clf_curie.predict(X_davinci)
-print("Accuracy-train-curie-test-davinci:",metrics.accuracy_score(y_davinci, y_cross))
+print("Accuracy-train-curie-test-davinci:",metrics.accuracy_score(y_davinci, y_cross),np.count_nonzero(y_cross == 1), y_cross.size)
 
 y_cross = clf_curie.predict(X_babbage)
-print("Accuracy-train-curie-test-babbage:",metrics.accuracy_score(y_babbage, y_cross))
+print("Accuracy-train-curie-test-babbage:",metrics.accuracy_score(y_babbage, y_cross),np.count_nonzero(y_cross == 1), y_cross.size)
 
 y_cross = clf_curie.predict(X_ada)
-print("Accuracy-train-curie-test-ada:",metrics.accuracy_score(y_ada, y_cross))
+print("Accuracy-train-curie-test-ada:",metrics.accuracy_score(y_ada, y_cross),np.count_nonzero(y_cross == 1), y_cross.size)
 
 
 y_cross = clf_babbage.predict(X_davinci)
-print("Accuracy-train-babbage-test-davinci:",metrics.accuracy_score(y_davinci, y_cross))
+print("Accuracy-train-babbage-test-davinci:",metrics.accuracy_score(y_davinci, y_cross),np.count_nonzero(y_cross == 1), y_cross.size)
 
 y_cross = clf_babbage.predict(X_curie)
-print("Accuracy-train-babbage-test-curie:",metrics.accuracy_score(y_curie, y_cross))
+print("Accuracy-train-babbage-test-curie:",metrics.accuracy_score(y_curie, y_cross),np.count_nonzero(y_cross == 1), y_cross.size)
 
 y_cross = clf_babbage.predict(X_ada)
-print("Accuracy-train-babbage-test-ada:",metrics.accuracy_score(y_ada, y_cross))
+print("Accuracy-train-babbage-test-ada:",metrics.accuracy_score(y_ada, y_cross),np.count_nonzero(y_cross == 1), y_cross.size)
 
 
 y_cross = clf_ada.predict(X_davinci)
-print("Accuracy-train-ada-test-davinci:",metrics.accuracy_score(y_davinci, y_cross))
+print("Accuracy-train-ada-test-davinci:",metrics.accuracy_score(y_davinci, y_cross),np.count_nonzero(y_cross == 1), y_cross.size)
 
 y_cross = clf_ada.predict(X_curie)
-print("Accuracy-train-ada-test-curie:",metrics.accuracy_score(y_curie, y_cross))
+print("Accuracy-train-ada-test-curie:",metrics.accuracy_score(y_curie, y_cross),np.count_nonzero(y_cross == 1), y_cross.size)
 
 y_cross = clf_ada.predict(X_babbage)
-print("Accuracy-train-ada-test-babbage:",metrics.accuracy_score(y_babbage, y_cross))
+print("Accuracy-train-ada-test-babbage:",metrics.accuracy_score(y_babbage, y_cross),np.count_nonzero(y_cross == 1), y_cross.size)
 
 
 
@@ -318,54 +321,100 @@ print("Accuracy-train-davinciOpenBookQA-test-davinciTruthfulnessQA:",metrics.acc
 
 
 df_davinci_openbook_QA = pd.read_csv("../outputs/openbookqa_davinci_labelled_features.csv")
+df_davinci_openbook_QA_original = pd.read_csv("../outputs/openbookqa_davinci_labelled.csv")
+
 y_davinci_openbook_QA = df_davinci_openbook_QA['truthfulness']
 X_davinci_openbook_QA = df_davinci_openbook_QA.drop(labels="truthfulness", axis=1)
+
+X_davinci_openbook_QA = X_davinci_openbook_QA.join(df_davinci_openbook_QA_original['question'])
+X_davinci_openbook_QA = X_davinci_openbook_QA.join(df_davinci_openbook_QA_original['model_answer'])
+
 X_train_davinci_openbook_QA, X_test_davinci_openbook_QA, y_train_davinci_openbook_QA, y_test_davinci_openbook_QA = train_test_split(X_davinci_openbook_QA, y_davinci_openbook_QA, test_size=0.2,random_state=2023)
+
+X_train_davinci_openbook_QA = X_train_davinci_openbook_QA.drop(labels="question", axis=1)
+X_train_davinci_openbook_QA = X_train_davinci_openbook_QA.drop(labels="model_answer", axis=1)
+question = X_test_davinci_openbook_QA['question']
+model_answer = X_test_davinci_openbook_QA['model_answer']
+X_test_davinci_openbook_QA = X_test_davinci_openbook_QA.drop(labels="question", axis=1)
+X_test_davinci_openbook_QA = X_test_davinci_openbook_QA.drop(labels="model_answer", axis=1)
+
+min_max_scaler = preprocessing.MinMaxScaler()
+X_train_davinci_openbook_QA = min_max_scaler.fit_transform(X_train_davinci_openbook_QA)
+min_max_scaler = preprocessing.MinMaxScaler()
+X_test_davinci_openbook_QA = min_max_scaler.fit_transform(X_test_davinci_openbook_QA)
 
 clf_davinci = svm.SVC(kernel='rbf')
 clf_davinci.fit(X_train_davinci_openbook_QA, y_train_davinci_openbook_QA)
+y_pred_test_davinci_openbook_QA = clf_davinci.predict(X_test_davinci_openbook_QA)
+print("Accuracy-train-davinciOpenBookQA-test-davinciOpenBookQA-mm:",metrics.accuracy_score(y_test_davinci_openbook_QA, y_pred_test_davinci_openbook_QA))
 
-y_test_pred_davinci_openbook_QA = clf_davinci.predict(X_test_davinci_openbook_QA)
-print("Accuracy-train-davinciOpenBookQA-test-davinciOpenBookQA:",metrics.accuracy_score(y_test_davinci_openbook_QA, y_test_pred_davinci_openbook_QA))
+clf_davinci_sfs = svm.SVC(kernel='rbf', C=0.8)
+sfs = SequentialFeatureSelector(clf_davinci_sfs, n_features_to_select="auto", tol=0.001, n_jobs=-1, scoring='accuracy')
+sfs.fit(X_train_davinci_openbook_QA, y_train_davinci_openbook_QA)
+X_train_davinci_openbook_QA = sfs.transform(X_train_davinci_openbook_QA)
+X_test_davinci_openbook_QA = sfs.transform(X_test_davinci_openbook_QA)
+print(X_test_davinci_openbook_QA.shape)
+clf_davinci_sfs.fit(X_train_davinci_openbook_QA, y_train_davinci_openbook_QA)
 
-df_davinci_openbook_QA_original = pd.read_csv("../outputs/openbookqa_davinci_labelled.csv")
-y_davinci_openbook_QA_original = df_davinci_openbook_QA_original['label']
-X_davinci_openbook_QA_original = df_davinci_openbook_QA_original.drop(labels='label', axis=1)
-X_train_davinci_openbook_QA_original, X_test_davinci_openbook_QA_original, y_train_davinci_openbook_QA_original, y_test_davinci_openbook_QA_original = train_test_split(X_davinci_openbook_QA_original, y_davinci_openbook_QA_original, test_size=0.2,random_state=2023)
+y_pred_test_davinci_openbook_QA = clf_davinci_sfs.predict(X_test_davinci_openbook_QA)
+print("Accuracy-train-davinciOpenBookQA-test-davinciOpenBookQA-sfs:",metrics.accuracy_score(y_test_davinci_openbook_QA, y_pred_test_davinci_openbook_QA))
 
 data = {
-    'response': X_test_davinci_openbook_QA_original.model_answer.values.tolist(),
-    'label': y_test_davinci_openbook_QA_original.tolist(),
-    'label-ignore': y_test_davinci_openbook_QA.tolist(),
-    'pred': y_test_pred_davinci_openbook_QA.tolist()
+    'question': question.tolist(),
+    'model_answer': model_answer.tolist(),
+    'label': y_test_davinci_openbook_QA.tolist(),
+    'pred': y_pred_test_davinci_openbook_QA.tolist()
 }
 df = pd.DataFrame(data)
-df.to_csv('../outputs/pred_openbookqa_davinci.csv',index=False)
-
+df.to_csv('../outputs/pred_openbookqa_davinci-sfs.csv', index=False)
 
 
 
 df_davinci_truthful_QA = pd.read_csv("../outputs/davinci_output_labeled_features.csv")
+df_davinci_truthful_QA_original = pd.read_csv("../outputs/davinci_output_labeled.csv")
+
 y_davinci_truthful_QA = df_davinci_truthful_QA['truthfulness']
 X_davinci_truthful_QA = df_davinci_truthful_QA.drop(labels="truthfulness", axis=1)
+
+X_davinci_truthful_QA = X_davinci_truthful_QA.join(df_davinci_truthful_QA_original['question'])
+X_davinci_truthful_QA = X_davinci_truthful_QA.join(df_davinci_truthful_QA_original['model_answer'])
+
 X_train_davinci_truthful_QA, X_test_davinci_truthful_QA, y_train_davinci_truthful_QA, y_test_davinci_truthful_QA = train_test_split(X_davinci_truthful_QA, y_davinci_truthful_QA, test_size=0.2,random_state=2023)
+
+X_train_davinci_truthful_QA = X_train_davinci_truthful_QA.drop(labels="question", axis=1)
+X_train_davinci_truthful_QA = X_train_davinci_truthful_QA.drop(labels="model_answer", axis=1)
+question = X_test_davinci_truthful_QA['question']
+model_answer = X_test_davinci_truthful_QA['model_answer']
+X_test_davinci_truthful_QA = X_test_davinci_truthful_QA.drop(labels="question", axis=1)
+X_test_davinci_truthful_QA = X_test_davinci_truthful_QA.drop(labels="model_answer", axis=1)
+
+min_max_scaler = preprocessing.MinMaxScaler()
+X_train_davinci_truthful_QA = min_max_scaler.fit_transform(X_train_davinci_truthful_QA)
+min_max_scaler = preprocessing.MinMaxScaler()
+X_test_davinci_truthful_QA = min_max_scaler.fit_transform(X_test_davinci_truthful_QA)
 
 clf_davinci = svm.SVC(kernel='rbf')
 clf_davinci.fit(X_train_davinci_truthful_QA, y_train_davinci_truthful_QA)
+y_pred_test_davinci_truthful_QA = clf_davinci.predict(X_test_davinci_truthful_QA)
+print("Accuracy-train-davincitruthfulQA-test-davincitruthfulQA-mm:",metrics.accuracy_score(y_test_davinci_truthful_QA, y_pred_test_davinci_truthful_QA))
 
-y_test_pred_davinci_truthful_QA = clf_davinci.predict(X_test_davinci_truthful_QA)
-print("Accuracy-train-davinciTruthfulQA-test-davinciTruthfulQA:",metrics.accuracy_score(y_test_davinci_truthful_QA, y_test_pred_davinci_truthful_QA))
+clf_davinci_sfs = svm.SVC(kernel='rbf', C=0.8)
+sfs = SequentialFeatureSelector(clf_davinci_sfs, n_features_to_select="auto", tol=0.001, n_jobs=-1, scoring='accuracy')
+sfs.fit(X_train_davinci_truthful_QA, y_train_davinci_truthful_QA)
+X_train_davinci_truthful_QA = sfs.transform(X_train_davinci_truthful_QA)
+X_test_davinci_truthful_QA = sfs.transform(X_test_davinci_truthful_QA)
+print(X_test_davinci_truthful_QA.shape)
 
-df_davinci_truthful_QA_original = pd.read_csv("../outputs/davinci_output_labeled.csv")
-y_davinci_truthful_QA_original = df_davinci_truthful_QA_original['pred']
-X_davinci_truthful_QA_original = df_davinci_truthful_QA_original.drop(labels='pred', axis=1)
-X_train_davinci_truthful_QA_original, X_test_davinci_truthful_QA_original, y_train_davinci_truthful_QA_original, y_test_davinci_truthful_QA_original = train_test_split(X_davinci_truthful_QA_original, y_davinci_truthful_QA_original, test_size=0.2,random_state=2023)
+clf_davinci_sfs.fit(X_train_davinci_truthful_QA, y_train_davinci_truthful_QA)
+
+y_pred_test_davinci_truthful_QA = clf_davinci_sfs.predict(X_test_davinci_truthful_QA)
+print("Accuracy-train-davincitruthfulQA-test-davincitruthfulQA-sfs:",metrics.accuracy_score(y_test_davinci_truthful_QA, y_pred_test_davinci_truthful_QA))
 
 data = {
-    'response': X_test_davinci_truthful_QA_original.model_answer.values.tolist(),
-    'label': y_test_davinci_truthful_QA_original.tolist(),
-    'label-ignore': y_test_davinci_truthful_QA.tolist(),
-    'pred': y_test_pred_davinci_truthful_QA.tolist()
+    'question': question.tolist(),
+    'model_answer': model_answer.tolist(),
+    'label': y_test_davinci_truthful_QA.tolist(),
+    'pred': y_pred_test_davinci_truthful_QA.tolist()
 }
 df = pd.DataFrame(data)
-df.to_csv('../outputs/pred_truthfulqa_davinci.csv',index=False)
+df.to_csv('../outputs/pred_truthfulqa_davinci-sfs.csv', index=False)

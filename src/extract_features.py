@@ -6,7 +6,7 @@ from tqdm import tqdm
 nlp = spacy.load("en_core_web_sm")
 searched_features = lftk.search_features(return_format = "list_key")
 
-output_paths = ["../outputs/ada_output_labeled.csv", "../outputs/babbage_output_labeled.csv", "../outputs/curie_output_labeled.csv", "../outputs/davinci_output_labeled.csv"]
+output_paths = ["../outputs/openbookqa_davinci_labelled.csv", "../outputs/ada_output_labeled.csv", "../outputs/babbage_output_labeled.csv", "../outputs/curie_output_labeled.csv", "../outputs/davinci_output_labeled.csv"]
 
 for output_path in output_paths:
     df = pd.read_csv(output_path)
@@ -20,7 +20,10 @@ for output_path in output_paths:
             extracted_features = LFTK.extract(features = searched_features)
             
             new_row = {**extracted_features}
-            new_row['truthfulness'] = row['pred']
+            if output_path != "../outputs/openbookqa_davinci_labelled.csv":
+                new_row['truthfulness'] = row['pred']
+            else:
+                new_row['truthfulness'] = row['label']
             features_label.append(new_row)
         except:
             print(row['model_answer'])

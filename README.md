@@ -22,6 +22,3 @@
 - Sample response for a mini TruthfulQA dataset `TruthfulQA_mini.csv` (has 10 questions) can be found in `chat_completion_outputs.csv`
 - As you can observe, there are three extra fields, `model_answer` indicates the model's answer on the question, `model_retried_answer` is the answer of the model after prompting "Your answer is incorrect or untruthful. Can you retry answering?" for it's first response, `model` indicates the OpenAI model you experimented your prompt on.
 
-## Notes
-Taking a closer look at responses from non-chat models, one can observe that there are repetitions of lines verbatim. This can be controlled by adjusting frequency and presence penalties.
-
